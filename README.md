@@ -248,7 +248,8 @@ This project requires Maven to:
 1. Resolve all 300+ dependencies (direct and transitive)
 2. Download vulnerable dependency versions from Maven Central
 3. Generate the dependency tree for Snyk scanning
-4. Compile Java and Kotlin source files
-5. Package the application as an executable JAR
+##。。。。。。
+5. Compile Java and Kotlin source files
+6. Package the application as an executable JAR
 
 Without Maven installed, the project structure and code are complete but cannot be built or scanned.
