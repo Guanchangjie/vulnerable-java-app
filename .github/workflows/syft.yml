@@ -6,13 +6,14 @@ on:
     branches:
       - main
       - master
+
   pull_request:
     branches:
       - main
       - master
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   sbom:
@@ -20,15 +21,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 拉取代码
+      # 1. 拉取项目代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 使用 Syft 生成 SBOM
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
+      # 2. 安装 Syft
+      - name: Install Syft
+        run: |
+          curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
+          syft version
+
+      # 3. 生成 Syft 原生 JSON 报告
+      - name: Generate SBOM JSON
+        run: |
+          syft dir:. -o json=sbom.json
+
+      # 4. 配置 Python 环境
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          format: cyclonedx-json
-          output-file: sbom-cyclonedx.json
-          upload-artifact: true
-          upload-artifact-retention: 30
+          python-version: '3.12'
+
+      # 5. JSON 转 HTML
+      - name: Convert JSON to HTML
+        run: |
+          python sbom_to_html.py
+
+      # 6. 上传 JSON 和 HTML 报告
+      - name: Upload SBOM Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: SBOM-Reports
+          path: |
+            sbom.json
+            sbom-report.html
+          retention-days: 30
