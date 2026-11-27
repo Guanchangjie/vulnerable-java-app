@@ -5,12 +5,10 @@ on:
   push:
     branches:
       - main
-      - master
 
   pull_request:
     branches:
       - main
-      - master
 
 permissions:
   contents: read
@@ -31,28 +29,28 @@ jobs:
           curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
           syft version
 
-      # 3. 生成 Syft 原生 JSON 报告
+      # 3. 生成 CycloneDX JSON
       - name: Generate SBOM JSON
         run: |
-          syft dir:. -o json=sbom.json
+          syft dir:. -o cyclonedx-json=sbom-report.json
 
-      # 4. 配置 Python 环境
+      # 4. 配置 Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      # 5. JSON 转 HTML
+      # 5. 执行 JSON 转 HTML
       - name: Convert JSON to HTML
         run: |
           python sbom_to_html.py
 
-      # 6. 上传 JSON 和 HTML 报告
+      # 6. 上传报告
       - name: Upload SBOM Reports
         uses: actions/upload-artifact@v4
         with:
           name: SBOM-Reports
           path: |
-            sbom.json
+            sbom-report.json
             sbom-report.html
           retention-days: 30
